@@ -12,6 +12,7 @@ Light Mode:
 ![Untitled-1](https://github.com/NevoSwissa/CL-Reports/assets/96447671/8b1b0720-951d-4de5-9399-304c682bc887)
 
 # Features
+
 - Intuitive and easy-to-use interface for players and admins.
 - Players can submit reports for issues, players, questions, or bugs.
 - Admins have access to a console for managing reports. Admins can respond to reports by either bringing or going to the reported player. After resolving a report, everyone is returned to their original positions.
