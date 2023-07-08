@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+  		<title>CL-Reports</title>
+		<meta charset="UTF-8">
+  		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  		<link rel="stylesheet" type="text/css" href="style.css">
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<div class="white-box" id="white-box">
+			  	<div class="player-profile-container">
+					<div class="player-profile-info" id="player-profile-info">
+				  		<i class="fa-solid fa-user profile-icon"></i>
+						<div class="profile-info">
+							<header>Welcome,</header>
+							<header id="player-name"></header>
+						</div>
+					</div>
+			  	</div>
+				<div class="text-container">
+					<p>Share your issue by</p>
+					<p>reporting it to us.</p>
+				</div>
+				<div class="divider"></div>
+				<div class="close-icon-container">
+					<i class="fa-solid fa-times close-icon"></i>
+					<span class="close-text">ESC</span>
+				</div>
+				<p class="report-text">I would like to report</p>
+				<div class="dropdown-container">
+					<select class="dropdown-input" required>
+					  	<option value="" disabled selected hidden>Select an option</option>
+					  	<option value="bug">A Bug</option>
+					  	<option value="question">A Question</option>
+					  	<option value="player">A Player</option>
+					</select>
+				</div>
+				<p class="title-text">Title</p>
+				<input type="text" class="title-input" placeholder="Enter a title" maxlength="50" required>
+				<p class="description-text">Description</p>
+				<textarea class="description-input" placeholder="Enter a description" required></textarea>
+				<button class="submit-button" onclick="reportIssue()">Report</button>			  
+			</div>
+			<div class="admin-container">
+				<div class="admin-white-box">
+				  	<div class="close-icon-container">
+						<i class="fa-solid fa-times close-icon"></i>
+						<span class="close-text">ESC</span>
+				  	</div>
+					<div class="player-profile-container">
+						<div class="player-profile-info" id="player-profile-info">
+							<i class="fa-solid fa-user profile-icon"></i>
+							<div class="profile-info">
+								<header>Welcome,</header>
+								<header id="player-name2"></header>
+								<div class="help-icon" data-tooltip="This is your admin reports console. Use it to manage and respond to reports from players.">
+									<i class="fa-solid fa-question-circle"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="divider"></div>
+					<div class="switch-container">
+						<div class="switch-wrapper">
+							<h3>Accept Reports</h3>
+							<label class="switch">
+								<input type="checkbox" id="toggle-btn">
+								<span class="slider round"></span>
+							</label>
+						</div>
+						<div class="switch-wrapper">
+							<h3>Dark Mode</h3>
+							<label class="switch">
+								<input type="checkbox" id="toggle-btn2">
+								<span class="slider round"></span>
+							</label>
+						</div>
+					</div>
+					<div class="report-container">
+						<footer class="footer">
+						  <p>ID</p>
+						  <p>PLAYER</p>
+						  <p>REPORTED</p>
+						  <p>ACTION</p>
+						</footer>
+						<div class="report-list" id="report-list"></div>
+					</div>
+					<div class="page-container">
+						<i class="fa-solid fa-crown leaderboard-button"></i>
+					</div>
+				</div>
+			</div>
+			<div class="help-container">
+				<div class="help-white-box">
+					<div class="close-icon-container">
+						<i class="fa-solid fa-times close-icon"></i>
+						<span class="close-text">ESC</span>
+				  	</div>
+					<div class="player-profile-container help-profile">
+						<div class="player-profile-info" id="player-profile-info">
+							<div class="help-icon help-profile" data-tooltip="">
+								<i class="fa-solid fa-triangle-exclamation profile-icon"></i>
+							</div>
+							<div class="profile-info">
+								<header>
+									<span id="report-id"></span>
+									<span id="player-name3"></span>
+								</header>
+							</div>
+						</div>
+					</div>
+					<div class="divider"></div>
+					<p class="title-text help-profile">Title</p>
+					<input type="text" class="title-input help-profile" placeholder="Enter a title">
+					<p class="description-text help-profile">Description</p>
+					<textarea class="description-input help-profile" placeholder="Enter a description" required></textarea>
+					<div class="button-container">
+						<button class="button">
+						  	<i class="fa-solid fa-plane-arrival"></i>Bring
+						</button>
+						<button class="button">
+						  	<i class="fa-solid fa-plane-departure"></i>Go To
+						</button>
+						<button class="button">
+						  	<i class="fa-solid fa-clipboard-check fa-fade"></i>Resolve
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="leaderboard-container">
+				<div class="leaderboard-white-box">
+					<div class="close-icon-container">
+						<i class="fa-solid fa-times close-icon"></i>
+						<span class="close-text">ESC</span>
+				  	</div>
+					<div class="player-profile-container">
+						<div class="player-profile-info" id="player-profile-info">
+							<i class="fa-solid fa-user profile-icon"></i>
+							<div class="profile-info">
+								<header>Welcome,</header>
+								<header id="player-name4"></header>
+							</div>
+						</div>
+					</div>
+					<div class="text-container leaderboard-profile">
+						<p>This week's admin</p>
+						<p>champions.</p>
+					</div>
+					<div class="divider"></div>
+					<div class="leaderboard-list" id="leaderboard-list"></div>
+				</div>
+			</div>
+		</div>
+  		<script src="custom.js"></script>
+	</body>
+</html>
