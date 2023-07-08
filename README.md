@@ -4,15 +4,12 @@ Simple to use reports system which allows players to report issues with an advan
 Preview: https://youtu.be/EYLRlpkIu-c
 
 Dark Mode :
-![image](https://github.com/NevoSwissa/CL-Reports/assets/96447671/f4cec98e-fdd5-433b-aafc-de6c24bef90a)
-![image](https://github.com/NevoSwissa/CL-Reports/assets/96447671/47b8d915-0adf-40b1-9a8c-a090382dd4f6)
-![image](https://github.com/NevoSwissa/CL-Reports/assets/96447671/f795a0b3-fecf-4ec9-b3a0-62a6be7bbda9)
+
+![Untitled-2](https://github.com/NevoSwissa/CL-Reports/assets/96447671/5a60a65c-3c93-439f-bdac-2571f94b767d)
 
 Light Mode:
-![Screenshot_4](https://github.com/NevoSwissa/CL-Reports/assets/96447671/9b1e5d56-6a1b-430a-b610-b9a69ad1376d)
-![Screenshot_3](https://github.com/NevoSwissa/CL-Reports/assets/96447671/0e6f82fa-00ef-43dc-918f-49355e503934)
-![Screenshot_2](https://github.com/NevoSwissa/CL-Reports/assets/96447671/955d234a-b12d-4c80-9ff0-308a120d3fe2)
-![Screenshot_1](https://github.com/NevoSwissa/CL-Reports/assets/96447671/99a89786-c726-4857-aec5-6769ce35c1ae)
+
+![Untitled-1](https://github.com/NevoSwissa/CL-Reports/assets/96447671/8b1b0720-951d-4de5-9399-304c682bc887)
 
 # Features
 - Intuitive and easy-to-use interface for players and admins.
