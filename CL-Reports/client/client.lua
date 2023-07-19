@@ -78,6 +78,12 @@ RegisterNUICallback("GetPermission", function(data, cb)
     end, { type = "godpermission" })
 end)
 
+RegisterNUICallback("GetReportStatus", function(data, cb)
+    QBCore.Functions.TriggerCallback('CL-Reports:GetInfo', function(result)
+        cb(result)
+    end, { type = "reportstatus", playerid = data.playerid })
+end)
+
 RegisterNUICallback("GetTopAdmins", function(data, cb)
     QBCore.Functions.TriggerCallback('CL-Reports:GetInfo', function(result)
         if result then

@@ -1,9 +1,8 @@
 let playerID = null;
 let playerLeaderBoardName = null;
 let timeoutInfo = null;
-let activeReport = false;
-let reportTimeout = false;
 let godPermission = false;
+let timeoutInterval;
 let currentPage = 1;
 let totalPages = 1;
 const body = document.body;
@@ -23,12 +22,14 @@ $(document).ready(function() {
 bringButton.addEventListener('click', function() {
   bringAction(getReportId());
 });
+
 goToButton.addEventListener('click', function() {
   goToAction(getReportId());
 });
+
 resolveButton.addEventListener('click', function() {
   resolveAction(getReportId());
-});
+})
 
 function hasGodPermission(callback) {
   $.post(`https://${GetParentResourceName()}/GetPermission`, JSON.stringify({}), function(result) {
@@ -93,11 +94,19 @@ function goToAction(reportId) {
 }
 
 function resolveAction(reportId) {
+  clearTimeout(timeoutInterval);
   $.post(`https://${GetParentResourceName()}/ButtonAction`, JSON.stringify({
     action: 'resolve',
     reportid: reportId,
   }));
-  activeReport = false;
+}
+
+function getReportStatus(playerid, callback) {
+  $.post(`https://${GetParentResourceName()}/GetReportStatus`, JSON.stringify({
+    playerid: playerid,
+  }), function(result) {
+    callback(result);
+  });
 }
 
 function updatePaginationButtons() {
@@ -314,53 +323,50 @@ function resetInputs() {
 }
 
 function reportIssue() {
-  if (activeReport) {
-    $.post(`https://${GetParentResourceName()}/SendNotify`, JSON.stringify({
-      message: 'You already have an active report. Please wait until your report is dealt with or when the timeout runs out.',
-      type: 'error',
-    }));
-    return;
-  }
+  getReportStatus(playerID, function(status) {
+    if (status) {
+      $.post(`https://${GetParentResourceName()}/SendNotify`, JSON.stringify({
+        message: 'You already have an active report. Please wait until your report is dealt with or when the timeout runs out.',
+        type: 'error',
+      }));
+    } else {
+      const dropdown = document.querySelector('.dropdown-input');
+      const selectedOption = dropdown.value;
 
-  const dropdown = document.querySelector('.dropdown-input');
-  const selectedOption = dropdown.value;
+      const titleInput = document.querySelector('.title-input');
+      const title = titleInput.value;
 
-  const titleInput = document.querySelector('.title-input');
-  const title = titleInput.value;
+      const descriptionInput = document.querySelector('.description-input');
+      const description = descriptionInput.value;
 
-  const descriptionInput = document.querySelector('.description-input');
-  const description = descriptionInput.value;
+      if (!dropdown.checkValidity() || !titleInput.checkValidity() || !descriptionInput.checkValidity()) {
+        $.post(`https://${GetParentResourceName()}/SendNotify`, JSON.stringify({
+          message: 'Please fill in all the required fields.',
+          type: 'error',
+        }));
+        return;
+      }
 
-  if (!dropdown.checkValidity() || !titleInput.checkValidity() || !descriptionInput.checkValidity()) {
-    $.post(`https://${GetParentResourceName()}/SendNotify`, JSON.stringify({
-      message: 'Please fill in all the required fields.',
-      type: 'error',
-    }));
-    return;
-  }
+      $.post(`https://${GetParentResourceName()}/ReportInfo`, JSON.stringify({
+        type: selectedOption,
+        reportTitle: title,
+        reportDescription: description,
+        reporterID: playerID,
+      }));
 
-  $.post(`https://${GetParentResourceName()}/ReportInfo`, JSON.stringify({
-    type: selectedOption,
-    reportTitle: title,
-    reportDescription: description,
-    reporterID: playerID,
-  }));
+      dropdown.value = '';
+      titleInput.value = '';
+      descriptionInput.value = '';
 
-  dropdown.value = '';
-  titleInput.value = '';
-  descriptionInput.value = '';
+      HideUserInterface();
 
-  HideUserInterface();
-  activeReport = true;
-
-  if (timeoutInfo.Enable) {
-    setTimeout(function() {
-      activeReport = false;
-      $.post(`https://${GetParentResourceName()}/ReportTimeout`);
-    }, timeoutInfo.Time * 60 * 1000);
-  } else {
-    activeReport = false;
-  }
+      if (timeoutInfo.Enable && timeoutInfo.Time > 0) {
+        timeoutInterval = setTimeout(function() {
+          $.post(`https://${GetParentResourceName()}/ReportTimeout`);
+        }, timeoutInfo.Time * 60 * 1000);
+      }
+    }
+  });
 }
 
 $('.close-icon').click(function() {

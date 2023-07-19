@@ -1,5 +1,7 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
+local activeReport = {}
+
 local entityCoords = {}
 
 AddEventHandler('onResourceStart', function(resource)
@@ -185,14 +187,16 @@ end
 
 RegisterServerEvent("CL-Reports:DeleteAllReports", function()
     local src = source
+    local reporterID = tostring(src)
     MySQL.Async.fetchAll('SELECT * FROM cl_reports WHERE JSON_EXTRACT(report_info, "$.reporterID") = @reporterID', {
-        ['@reporterID'] = tostring(src),
+        ['@reporterID'] = reporterID,
     }, function(result)
         if result then
             MySQL.Async.execute('DELETE FROM cl_reports WHERE JSON_EXTRACT(report_info, "$.reporterID") = @reporterID', {
-                ['@reporterID'] = tostring(src),
+                ['@reporterID'] = reporterID,
             }, function(rowsAffected)
                 if rowsAffected > 0 then
+                    activeReport[reporterID] = false
                     TriggerClientEvent("QBCore:Notify", src, "Your report has been removed due to timeout. You can now create another report")
                 else
                     TriggerClientEvent("QBCore:Notify", src, "An error occurred while removing your active report.", "error", 5000)
@@ -227,6 +231,9 @@ RegisterServerEvent("CL-Reports:ReceiveReportData", function(data, receiveReport
     MySQL.Async.execute('INSERT INTO cl_reports (report_info) VALUES (@reportInfo)', {
         ['@reportInfo'] = jsonReportData,
     })
+    if Config.Timeout['Enable'] then
+        activeReport[reporterID] = true
+    end
     if Config.Discord['Enable'] then
         SendDiscordLog(message)
     end
@@ -271,6 +278,7 @@ RegisterServerEvent("CL-Reports:ResolveReport", function(reportid, playerSource)
                 end
             end
             if playerSource ~= nil then
+                activeReport[playerSource] = false
                 TriggerClientEvent("QBCore:Notify", playerSource, "Your report has been resolved.", "success")
             end
         else
@@ -398,5 +406,11 @@ QBCore.Functions.CreateCallback("CL-Reports:GetInfo", function(source, cb, data)
         GetTopAdmins(function(admins)
             cb(admins)
         end)
+    elseif data.type == "reportstatus" then
+        if activeReport[data.playerid] ~= nil then
+            cb(activeReport[data.playerid])
+        else
+            cb(false)
+        end
     end
 end) 
