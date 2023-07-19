@@ -153,8 +153,8 @@ body {
   position: absolute;
   top: 94px;
   left: 15px;
-  width: calc(100% - 37px); 
-  height: 2.5px;
+  width: calc(100% - 37px);
+  height: 3px;
   border-radius: 3px;
   background-color: var(--divider-and-hover-color);
 }

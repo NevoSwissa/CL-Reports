@@ -1,5 +1,7 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
+local entityCoords = {}
+
 AddEventHandler('onResourceStart', function(resource)
     if resource == GetCurrentResourceName() then
         Wait(100)
@@ -200,37 +202,6 @@ RegisterServerEvent("CL-Reports:DeleteAllReports", function()
     end)
 end)
 
-RegisterServerEvent("CL-Reports:ResolveReport", function(reportid, playerSource)
-    local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
-    MySQL.Async.execute('DELETE FROM cl_reports WHERE id = @id', {
-        ['@id'] = reportid,
-    }, function(rowsChanged)
-        if rowsChanged > 0 then
-            if QBCore.Functions.HasPermission(src, 'admin') or IsPlayerAceAllowed(src, 'command') then
-                if playerSource ~= src then
-                    MySQL.Async.execute('UPDATE players SET reports = IFNULL(reports, 0) + 1 WHERE citizenid = @citizenid', {
-                        ['@citizenid'] = Player.PlayerData.citizenid,
-                    }, function(rowsChanged)
-                        if rowsChanged == 0 then
-                            MySQL.Async.execute('INSERT INTO players (citizenid, reports) VALUES (@citizenid, 1)', {
-                                ['@citizenid'] = Player.PlayerData.citizenid,
-                            })
-                        end
-                    end)
-                end
-            end
-            if playerSource ~= nil then
-                TriggerClientEvent("QBCore:Notify", playerSource, "Your report has been resolved.", "success")
-            end
-        else
-            if playerSource ~= nil then
-                TriggerClientEvent("QBCore:Notify", playerSource, "Failed to resolve your report.", "error")
-            end
-        end
-    end)
-end)
-
 RegisterServerEvent("CL-Reports:ReceiveReportData", function(data, receiveReports)
     local reporterID = data.reporterID
     local reportDescription = data.reportDescription
@@ -263,6 +234,97 @@ RegisterServerEvent("CL-Reports:ReceiveReportData", function(data, receiveReport
         local admins = GetAdmins()
         for _, admin in ipairs(admins) do
             TriggerClientEvent("QBCore:Notify", admin.PlayerData.source, playerName .. " reported a " .. reportReason .. " use your admin console to respond", "primary", 7500)
+        end
+    end
+end)
+
+RegisterServerEvent("CL-Reports:ResolveReport", function(reportid, playerSource)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    local originalCoordsData = entityCoords[reportid]
+    MySQL.Async.execute('DELETE FROM cl_reports WHERE id = @id', {
+        ['@id'] = reportid,
+    }, function(rowsChanged)
+        if rowsChanged > 0 then
+            if originalCoordsData and (originalCoordsData.type == "bring" or originalCoordsData.type == "goto") then
+                if originalCoordsData.type == "bring" then
+                    local reporterEntity = GetPlayerPed(playerSource)
+                    SetEntityCoords(reporterEntity, originalCoordsData.reporterCoords)
+                    SetEntityHeading(reporterEntity, originalCoordsData.reporterHeading - 180)
+                elseif originalCoordsData.type == "goto" then
+                    local adminEntity = GetPlayerPed(src)
+                    SetEntityCoords(adminEntity, originalCoordsData.adminCoords)
+                    SetEntityHeading(adminEntity, originalCoordsData.adminHeading - 180)
+                end
+            end
+            if QBCore.Functions.HasPermission(src, 'admin') or IsPlayerAceAllowed(src, 'command') then
+                if playerSource ~= src then
+                    MySQL.Async.execute('UPDATE players SET reports = IFNULL(reports, 0) + 1 WHERE citizenid = @citizenid', {
+                        ['@citizenid'] = Player.PlayerData.citizenid,
+                    }, function(rowsChanged)
+                        if rowsChanged == 0 then
+                            MySQL.Async.execute('INSERT INTO players (citizenid, reports) VALUES (@citizenid, 1)', {
+                                ['@citizenid'] = Player.PlayerData.citizenid,
+                            })
+                        end
+                    end)
+                end
+            end
+            if playerSource ~= nil then
+                TriggerClientEvent("QBCore:Notify", playerSource, "Your report has been resolved.", "success")
+            end
+        else
+            if playerSource ~= nil then
+                TriggerClientEvent("QBCore:Notify", playerSource, "Failed to resolve your report.", "error")
+            end
+        end
+        entityCoords[reportid] = nil
+    end)
+end)
+
+RegisterServerEvent("CL-Reports:ButtonAction", function(type, reporterID, reportID)
+    local src = source
+    if src and reporterID then
+        local adminEntity = GetPlayerPed(src)
+        local reporterEntity = GetPlayerPed(reporterID)
+        if type == "bring" then
+            if not entityCoords[reportID] then 
+                local adminCoords = GetEntityCoords(adminEntity)
+                local adminHeading = GetEntityHeading(adminEntity)
+                if adminEntity and reporterEntity then
+                    entityCoords[reportID] = {
+                        adminCoords = adminCoords,
+                        adminHeading = adminHeading,
+                        reporterCoords = GetEntityCoords(reporterEntity),
+                        reporterHeading = GetEntityHeading(reporterEntity),
+                        type = type,
+                    }
+                    TriggerClientEvent("QBCore:Notify", reporterID, "Admin brought you to their location to assist with your report")
+                    SetEntityCoords(reporterEntity, adminCoords)
+                    SetEntityHeading(reporterEntity, adminHeading - 180)
+                end
+            else
+                TriggerClientEvent("QBCore:Notify", src, "You can only use one action (bring or goto) for this report.", "error")
+            end
+        elseif type == "goto" then
+            if not entityCoords[reportID] then 
+                local reporterCoords = GetEntityCoords(reporterEntity)
+                local reporterHeading = GetEntityHeading(reporterEntity)
+                if adminEntity and reporterEntity then
+                    entityCoords[reportID] = {
+                        adminCoords = GetEntityCoords(adminEntity),
+                        adminHeading = GetEntityHeading(adminEntity),
+                        reporterCoords = reporterCoords,
+                        reporterHeading = reporterHeading,
+                        type = type,
+                    }
+                    TriggerClientEvent("QBCore:Notify", reporterID, "Admin went to your location to assist with your report")
+                    SetEntityCoords(adminEntity, reporterCoords)
+                    SetEntityHeading(adminEntity, reporterHeading - 180)
+                end
+            else
+                TriggerClientEvent("QBCore:Notify", src, "You can only use one action (bring or goto) for this report.", "error")
+            end
         end
     end
 end)

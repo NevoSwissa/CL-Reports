@@ -6,8 +6,6 @@ local enableReportUI = false
 
 local enableAdminUI = false
 
-local entityCoords = {}
-
 RegisterNUICallback("HideUserInterface", function()
     if enableReportUI then
         SetNuiFocus(false, false)
@@ -48,67 +46,13 @@ RegisterNUICallback("ButtonAction", function(data)
         QBCore.Functions.TriggerCallback('CL-Reports:GetInfo', function(result)
             if result then
                 if data.action == "bring" then
-                    local adminEntity = PlayerPedId()
-                    local adminCoords = GetEntityCoords(adminEntity)
-                    local adminHeading = GetEntityHeading(adminEntity)
-                    local reporterEntity = GetPlayerPed(GetPlayerFromServerId(result))
-                    if adminEntity == reporterEntity then
-                        QBCore.Functions.Notify('You cant bring yourself.', 'error')
-                        return
-                    end
-                    entityCoords[data.reportid] = {
-                        adminCoords = GetEntityCoords(GetPlayerPed(GetPlayerFromServerId(result))),
-                        adminHeading = GetEntityHeading(GetPlayerPed(GetPlayerFromServerId(result))),
-                        reporterCoords = GetEntityCoords(PlayerPedId()),
-                        reporterHeading = GetEntityHeading(PlayerPedId())
-                    }
-                    if adminCoords and reporterEntity then
-                        PlaySoundFrontend(-1, "NO", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1)
-                        SetEntityCoords(reporterEntity, adminCoords.x, adminCoords.y, adminCoords.z)
-                        SetEntityHeading(reporterEntity, adminHeading)
-                    end
+                    PlaySoundFrontend(-1, "NO", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1)
+                    TriggerServerEvent("CL-Reports:ButtonAction", "bring", result, data.reportid)
                 elseif data.action == "goto" then
-                    local adminEntity = PlayerPedId()
-                    local reporterEntity = GetPlayerPed(GetPlayerFromServerId(result))
-                    local reporterCoords = GetEntityCoords(reporterEntity)
-                    local reporterHeading = GetEntityHeading(reporterEntity)
-                    if adminEntity == reporterEntity then
-                        QBCore.Functions.Notify('You cant go to yourself.', 'error')
-                        return
-                    end
-                    entityCoords[data.reportid] = {
-                        adminCoords = GetEntityCoords(PlayerPedId()),
-                        adminHeading = GetEntityHeading(PlayerPedId()),
-                        reporterCoords = GetEntityCoords(GetPlayerPed(GetPlayerFromServerId(result))),
-                        reporterHeading = GetEntityHeading(GetPlayerPed(GetPlayerFromServerId(result)))
-                    }
-                    if reporterCoords and adminEntity then
-                        PlaySoundFrontend(-1, "NO", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1)
-                        SetEntityCoords(adminEntity, reporterCoords.x, reporterCoords.y, reporterCoords.z)
-                        SetEntityHeading(adminEntity, reporterHeading)
-                    end
+                    PlaySoundFrontend(-1, "NO", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1)
+                    TriggerServerEvent("CL-Reports:ButtonAction", "goto", result, data.reportid)
                 elseif data.action == "resolve" then
-                    local adminEntity = PlayerPedId()
-                    if entityCoords[data.reportid] then
-                        if entityCoords[data.reportid].adminCoords then
-                            local originalCoords = entityCoords[data.reportid].adminCoords
-                            local originalHeading = entityCoords[data.reportid].adminHeading
-                            if originalCoords and adminEntity then
-                                SetEntityCoords(adminEntity, originalCoords.x, originalCoords.y, originalCoords.z)
-                                SetEntityHeading(adminEntity, originalHeading)
-                            end
-                        elseif entityCoords[data.reportid].reporterCoords then
-                            local reporterEntity = GetPlayerPed(GetPlayerFromServerId(result))
-                            local originalReporterCoords = entityCoords[data.reportid].reporterCoords
-                            local originalReporterHeading = entityCoords[data.reportid].reporterHeading
-                            if originalReporterCoords and reporterEntity then
-                                SetEntityCoords(reporterEntity, originalReporterCoords.x, originalReporterCoords.y, originalReporterCoords.z)
-                                SetEntityHeading(reporterEntity, originalReporterHeading)
-                            end
-                        end
-                    end
                     TriggerServerEvent("CL-Reports:ResolveReport", data.reportid, result)
-                    entityCoords[data.reportid] = nil
                     Citizen.CreateThread(function()
                         Citizen.Wait(200)
                         SendNUIMessage({ 
@@ -157,11 +101,11 @@ RegisterNetEvent('CL-Reports:RefreshReports', function(reports)
     })
 end)
 
-RegisterKeyMapping("openReportsSystem", 'Reports System', 'keyboard', '9')
+RegisterKeyMapping("reportissue", 'Reports System', 'keyboard', '9')
 
-RegisterKeyMapping("openAdminsConsole", 'Reports Admin Console', 'keyboard', 'h')
+RegisterKeyMapping("adminconsole", 'Reports Admin Console', 'keyboard', 'h')
 
-RegisterCommand("openAdminsConsole", function()
+RegisterCommand("adminconsole", function()
     enableAdminUI = not enableAdminUI
     if enableAdminUI then
         QBCore.Functions.TriggerCallback('CL-Reports:GetInfo', function(result)
@@ -173,7 +117,6 @@ RegisterCommand("openAdminsConsole", function()
                     activeReports = result.activeReports,
                 })
             else
-                QBCore.Functions.Notify("You are not authorized to access the admin console.", "error")
                 enableAdminUI = false
             end
         end, { type = "admin" })
@@ -182,7 +125,7 @@ RegisterCommand("openAdminsConsole", function()
     end
 end)
 
-RegisterCommand("openReportsSystem", function()
+RegisterCommand("reportissue", function()
     enableReportUI = not enableReportUI
     if enableReportUI then
         QBCore.Functions.TriggerCallback('CL-Reports:GetInfo', function(result)
