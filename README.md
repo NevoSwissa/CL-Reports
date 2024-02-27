@@ -22,6 +22,8 @@ Light Mode:
 
 To use CL-Reports, simply drag & drop the resource after making sure the resource is called CL-Reports and not CL-Reports-main, then run the SQL tables necessary and run the script, simple as that !
 
+Use 9 on your keyboard to open the reports system and H to open the admin console.
+
 # Contributing
 
 Contributions are always welcome! If you find any issues or want to add new features, feel free to fork this repository and submit a pull request.
